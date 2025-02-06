@@ -312,6 +312,8 @@ class MathApp:
             x_new = x.copy()
             for i in range(n):
                 summation = sum(A[i][j] * x_new[j] for j in range(n) if j != i)
+                if A[i][i] == 0:
+                    raise ValueError("Diagonal can not be zero")
                 x_new[i] = (1 - omega) * x[i] + omega * (b[i] - summation) / A[i][i]
             iteration += 1
             if np.linalg.norm(x_new - x, ord=np.inf) < tol:
