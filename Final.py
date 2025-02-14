@@ -12,7 +12,7 @@ class MathApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Numerical Methods Calculator")
-        self.root.geometry("900x700")
+        self.root.geometry("1200x800")
         self.default_tol = 1e-6
         
         # Main container frame
@@ -96,70 +96,70 @@ class MathApp:
 
         if method == "Absolute/Relative Errors":
             inputs = [
-                ("True Value:", "entry"),
-                ("Approximate Value:", "entry")
+                ("True Value (e.g., 3.14159):", "entry"),
+                ("Approximate Value (e.g., 3.14):", "entry")
             ]
         elif method == "Graphical Method":
             inputs = [
                 ("Function (e.g., x**4 - 10*x**2 + 9):", "entry"),
-                ("Start X:", "entry"),
-                ("End X:", "entry")
+                ("Start X (e.g., -4):", "entry"),
+                ("End X (e.g., 4):", "entry")
             ]
         elif method == "Bisection Method":
             inputs = [
                 ("Function (use 'np' for math, e.g., x**3 - 6*x**2 + 11*x - 6):", "entry"),
-                ("Left boundary (a):", "entry"),
-                ("Right boundary (b):", "entry"),
-                ("Tolerance (optional):", "entry")
+                ("Left boundary (a) (e.g., 0):", "entry"),
+                ("Right boundary (b) (e.g., 3):", "entry"),
+                ("Tolerance (optional, e.g., 1e-6):", "entry")
             ]
         elif method == "Newton-Raphson":
             inputs = [
                 ("Function (e.g., x**3 - 2*x - 5):", "entry"),
-                ("Derivative (e.g., 3*x**2 - 2):", "entry"),
-                ("Initial guess:", "entry"),
-                ("Tolerance (optional):", "entry")
+                ("Derivative (auto-filled):", "entry"),
+                ("Initial guess (e.g., 2.5):", "entry"),
+                ("Tolerance (optional, e.g., 1e-6):", "entry")
             ]
         elif method == "Relaxation Method":
             inputs = [
-                ("Matrix A (rows separated by ';' and numbers by commas, e.g., '10,-1,2,0; -1,11,-1,3; 2,-1,10,-1; 0,3,-1,8'):", "entry"),
-                ("Vector b (comma separated, e.g., '6,25,-11,15'):", "entry"),
-                ("Initial guess (comma separated, e.g., '0,0,0,0'):", "entry"),
-                ("Omega:", "entry"),
-                ("Tolerance (optional):", "entry"),
-                ("Max iterations (optional):", "entry")
+                ("Matrix A (rows separated by ';', numbers by commas, e.g., '1,1,1;1,0,1;0,1,1'):", "entry"),
+                ("Vector b (comma separated, e.g., '10,6,8'):", "entry"),
+                ("Initial guess (comma separated, e.g., '0,0,0'):", "entry"),
+                ("Omega (e.g., 0.8):", "entry"),
+                ("Tolerance (optional, e.g., 1e-6):", "entry"),
+                ("Max iterations (optional, e.g., 100):", "entry")
             ]
         elif method == "Power Method":
             inputs = [
-                ("Matrix A (rows separated by ';'):", "entry"),
-                ("Initial vector (comma separated):", "entry"),
-                ("Tolerance (optional):", "entry"),
-                ("Max iterations (optional):", "entry")
+                ("Matrix A (rows separated by ';', e.g., '4,1;2,3'):", "entry"),
+                ("Initial vector (comma separated, e.g., '1,1'):", "entry"),
+                ("Tolerance (optional, e.g., 1e-6):", "entry"),
+                ("Max iterations (optional, e.g., 100):", "entry")
             ]
         elif method == "Exponential Fit":
             inputs = [
-                ("X values (comma separated):", "entry"),
-                ("Y values (comma separated):", "entry")
+                ("X values (comma separated, e.g., '0,1,2,3,4'):", "entry"),
+                ("Y values (comma separated, e.g., '2.5,3.5,7.4,20.5,54.6'):", "entry")
             ]
         elif method == "Spline Interpolation":
             inputs = [
-                ("X values (comma separated):", "entry"),
-                ("Y values (comma separated):", "entry"),
-                ("X to interpolate:", "entry"),
+                ("X values (comma separated, e.g., '0,0.5,1.0,1.5'):", "entry"),
+                ("Y values (comma separated, e.g., '0,0.25,0.75,2.25'):", "entry"),
+                ("X to interpolate (e.g., 1.5):", "entry"),
                 ("Type (cubic/quadratic):", "entry")
             ]
         elif method == "Picard’s Method":
             inputs = [
                 ("ODE (as a function of x and y, e.g., x + y):", "entry"),
-                ("Initial y0:", "entry"),
-                ("Number of iterations:", "entry"),
-                ("x value to evaluate:", "entry")
+                ("Initial y0 (e.g., 1):", "entry"),
+                ("Number of iterations (e.g., 4):", "entry"),
+                ("x value to evaluate (e.g., 0.2):", "entry")
             ]
         elif method == "Simpson’s Rule":
             inputs = [
                 ("Function (e.g., np.sin(x)):", "entry"),
-                ("Start (a):", "entry"),
-                ("End (b):", "entry"),
-                ("Subintervals (even number):", "entry")
+                ("Start (a) (e.g., 0):", "entry"),
+                ("End (b) (e.g., np.pi):", "entry"),
+                ("Subintervals (even number, e.g., 10):", "entry")
             ]
 
         # Create input fields
@@ -170,9 +170,25 @@ class MathApp:
             entry.grid(row=i, column=1, sticky=tk.EW, padx=5, pady=2)
             self.current_widgets.extend([lbl, entry])
 
+        if method == "Newton-Raphson":
+            # Automatically add derivative field and make it read-only
+            func_entry = self.current_widgets[1]
+            func_entry.bind("<FocusOut>", self.update_derivative)
+
     def get_input_values(self):
         entries = [w for w in self.input_frame.winfo_children() if isinstance(w, ttk.Entry)]
         return [e.get() for e in entries]
+
+    def update_derivative(self, event):
+        func_entry = event.widget
+        func_text = func_entry.get()
+        x = sp.symbols('x')
+        func = sp.sympify(func_text)
+        derivative = str(sp.diff(func, x))
+        # Update the derivative entry field
+        self.current_widgets[3].delete(0, tk.END)
+        self.current_widgets[3].insert(0, derivative)
+        self.current_widgets[3].configure(state='readonly')
 
     def execute_method(self):
         method = self.method_combo.get()
@@ -261,27 +277,38 @@ class MathApp:
 
         if f(a) * f(b) >= 0:
             raise ValueError("f(a) and f(b) must have opposite signs.")
-        iteration = 0
-        while (b - a)/2 > tol:
-            c = (a + b)/2
-            if f(c) == 0:
-                a = b = c
-                break
-            if f(a) * f(c) < 0:
-                b = c
+        roots = self.find_all_roots_bisection(f, a, b, tol)
+        for root in roots:
+            self.append_text(f"Approximate root: {root:.6f}")
+
+    def find_all_roots_bisection(self, f, a, b, tol):
+        roots = []
+        intervals = [(a, b)]
+        while intervals:
+            a, b = intervals.pop()
+            if f(a) * f(b) < 0:
+                midpoint = (a + b) / 2
+                while abs(f(midpoint)) > tol:
+                    if f(a) * f(midpoint) < 0:
+                        b = midpoint
+                    else:
+                        a = midpoint
+                    midpoint = (a + b) / 2
+                roots.append(midpoint)
             else:
-                a = c
-            iteration += 1
-        root = (a + b)/2
-        self.append_text(f"Approximate root: {root:.6f} (in {iteration} iterations)")
+                mid = (a + b) / 2
+                if b - a > tol:
+                    intervals.append((a, mid))
+                    intervals.append((mid, b))
+        return roots
 
     def handle_newton_raphson(self, inputs):
         if not all(inputs[:3]):
             raise ValueError("Function, derivative, and initial guess are required.")
         f = lambda x: eval(inputs[0], {"np": np, "x": x})
-        df = lambda x: eval(inputs[1], {"np": np, "x": x})
+        df = lambda x: eval(self.current_widgets[3].get(), {"np": np, "x": x})  # Use the auto-generated derivative
         x0 = float(inputs[2])
-        tol = float(inputs[3]) if inputs[3] else self.default_tol
+        tol = float(inputs[3]) if len(inputs) > 3 and inputs[3] else self.default_tol
         iteration = 0
         x = x0
         while abs(f(x)) > tol:
@@ -292,7 +319,6 @@ class MathApp:
         self.append_text(f"Root: {x:.6f} (in {iteration} iterations)")
 
     def handle_relaxation(self, inputs):
-        # Expected inputs: Matrix A, Vector b, Initial guess, Omega, Tol, Max iter.
         if not all(inputs[:4]):
             raise ValueError("Matrix A, Vector b, Initial guess, and Omega are required.")
         try:
@@ -332,7 +358,6 @@ class MathApp:
             raise ValueError("Error parsing matrix or vector. Check the format.")
         tol = float(inputs[2]) if len(inputs) > 2 and inputs[2] else self.default_tol
         max_iter = int(inputs[3]) if len(inputs) > 3 and inputs[3] else 100
-        # Normalize initial vector
         v = v0 / np.linalg.norm(v0)
         iteration = 0
         for _ in range(max_iter):
@@ -356,13 +381,11 @@ class MathApp:
             y_vals = np.array([float(num) for num in inputs[1].split(',')])
         except Exception as e:
             raise ValueError("Error parsing X or Y values.")
-        # Exponential model: y = a * exp(b*x)
         def exp_func(x, a, b):
             return a * np.exp(b * x)
         params, _ = curve_fit(exp_func, x_vals, y_vals)
         a, b = params
         self.append_text(f"Fitted model: y = {a:.6f} * exp({b:.6f} * x)")
-        # Plot the original data and fitted curve
         x_fit = np.linspace(min(x_vals), max(x_vals), 200)
         y_fit = exp_func(x_fit, a, b)
         ax = self.figure.add_subplot(111)
@@ -393,82 +416,60 @@ class MathApp:
         else:
             raise ValueError("Spline type must be 'cubic' or 'quadratic'.")
         self.append_text(f"Interpolated value at x = {x_interp}: {y_interp:.6f}")
-        # Also plot the spline
         x_dense = np.linspace(min(x_vals), max(x_vals), 400)
         if spline_type == "cubic":
             y_dense = CubicSpline(x_vals, y_vals)(x_dense)
         else:
             y_dense = interp1d(x_vals, y_vals, kind='quadratic')(x_dense)
         ax = self.figure.add_subplot(111)
-        ax.plot(x_dense, y_dense, label=f"{spline_type.capitalize()} Spline")
+        ax.plot(x_dense, y_dense, label=f"Spline ({spline_type})")
         ax.scatter(x_vals, y_vals, color='orange', label="Data Points")
         ax.set_xlabel("x")
         ax.set_ylabel("y")
-        ax.set_title("Spline Interpolation")
         ax.legend()
         ax.grid()
 
     def handle_picard(self, inputs):
         if not all(inputs[:4]):
-            raise ValueError("ODE, initial y0, number of iterations, and x value are required.")
-        ode_expr = inputs[0]
+            raise ValueError("ODE, Initial y0, Number of iterations, and x value to evaluate are required.")
+        ode = lambda x, y: eval(inputs[0], {"np": np, "x": x, "y": y})
         y0 = float(inputs[1])
-        iterations = int(inputs[2])
+        iter_count = int(inputs[2])
         x_val = float(inputs[3])
-        # Define symbolic variables
-        x_sym = sp.symbols('x')
-        y = sp.Function('y')(x_sym)
-        # Parse the ODE function f(x,y)
-        f_expr = sp.sympify(ode_expr)
-        # Picard's iteration: y_{n+1}(x) = y0 + ∫[0,x] f(t, y_n(t)) dt
-        # Start with the zeroth approximation (constant function)
-        y_approx = sp.sympify(y0)
-        approximations = []
-        for i in range(iterations):
-            t = sp.symbols('t')
-            # Replace x by t and y by previous approximation
-            f_sub = f_expr.subs({x_sym: t, y: y_approx})
-            y_new = y0 + sp.integrate(f_sub, (t, 0, x_sym))
-            approximations.append(sp.simplify(y_new))
-            y_approx = y_new
-        # Evaluate the last approximation at x = x_val
-        y_val = y_approx.subs(x_sym, x_val)
-        self.append_text(f"After {iterations} iterations, y({x_val}) = {y_val.evalf()}")
-        # Optionally, list all approximations:
-        for idx, approx in enumerate(approximations, start=1):
-            self.append_text(f"Iteration {idx}: y(x) = {sp.pretty(approx)}")
+        y = y0
+        for _ in range(iter_count):
+            y = y0 + ode(x_val, y)
+        self.append_text(f"Picard's approximation at x = {x_val}: {y:.6f}")
 
     def handle_simpson(self, inputs):
         if not all(inputs[:4]):
-            raise ValueError("Function, start, end, and number of subintervals are required.")
+            raise ValueError("Function, Start (a), End (b), and Subintervals are required.")
         f = lambda x: eval(inputs[0], {"np": np, "x": x})
         a = float(inputs[1])
         b = float(inputs[2])
         n = int(inputs[3])
         if n % 2 != 0:
-            raise ValueError("Subintervals must be an even number.")
-        x = np.linspace(a, b, n + 1)
-        y = f(x)
+            raise ValueError("Number of subintervals must be even.")
         h = (b - a) / n
-        I = h/3 * (y[0] + y[-1] + 4 * sum(y[1:-1:2]) + 2 * sum(y[2:-2:2]))
-        self.append_text(f"Approximate integral value: {I:.6f}")
+        integral = f(a) + f(b)
+        for i in range(1, n, 2):
+            integral += 4 * f(a + i * h)
+        for i in range(2, n-1, 2):
+            integral += 2 * f(a + i * h)
+        integral *= h / 3
+        self.append_text(f"Simpson's rule approximation: {integral:.6f}")
 
-    # -------------------------------
-    # Clear function
     def clear_all(self):
-        # Clear inputs
-        for widget in self.input_frame.winfo_children():
-            widget.destroy()
-        self.current_widgets = []
-        # Reset placeholder message
-        self.placeholder_label = ttk.Label(self.input_frame, text="Select a method to display parameters.", foreground="gray")
-        self.placeholder_label.pack(pady=20)
-        # Clear text and figure
         self.clear_text()
         self.figure.clf()
         self.canvas.draw()
+        self.method_combo.set("Select a method")
+        for widget in self.current_widgets:
+            widget.destroy()
+        self.current_widgets = []
+        self.placeholder_label = ttk.Label(self.input_frame, text="Select a method to display parameters.", foreground="gray")
+        self.placeholder_label.pack(pady=20)
 
-# Main execution
 if __name__ == "__main__":
     root = tk.Tk()
     app = MathApp(root)
