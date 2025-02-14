@@ -317,6 +317,17 @@ class MathApp:
         tol = float(inputs[4]) if len(inputs) > 4 and inputs[4] else self.default_tol
         max_iter = int(inputs[5]) if len(inputs) > 5 and inputs[5] else 100
 
+        # Check for zero diagonals and swap rows if needed
+        for i in range(len(A)):
+            if A[i, i] == 0:
+                for j in range(i + 1, len(A)):
+                    if A[j, i] != 0 and A[i, j] != 0:
+                        A[[i, j]] = A[[j, i]]
+                        b[[i, j]] = b[[j, i]]
+                        break
+                else:
+                    raise ValueError("Cannot solve the system: Zero diagonal element found and no suitable row to swap.")
+
         n = len(b)
         x = x0.copy()
         iteration = 0
@@ -324,8 +335,6 @@ class MathApp:
             x_new = x.copy()
             for i in range(n):
                 summation = sum(A[i][j] * x_new[j] for j in range(n) if j != i)
-                if A[i][i] == 0:
-                    raise ValueError("Diagonal can not be zero")
                 x_new[i] = (1 - omega) * x[i] + omega * (b[i] - summation) / A[i][i]
             iteration += 1
             if np.linalg.norm(x_new - x, ord=np.inf) < tol:
