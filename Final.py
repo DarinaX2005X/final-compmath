@@ -424,17 +424,21 @@ class MathApp:
         ax.legend()
         ax.grid()
 
+    
     def handle_picard(self, inputs):
         if not all(inputs[:4]):
             raise ValueError("ODE, Initial y0, Number of iterations, and x value to evaluate are required.")
-        ode = lambda x, y: eval(inputs[0], {"np": np, "x": x, "y": y})
-        y0 = float(inputs[1])
-        iter_count = int(inputs[2])
-        x_val = float(inputs[3])
-        y = y0
-        for _ in range(iter_count):
-            y = y0 + ode(x_val, y)
-        self.append_text(f"Picard's approximation at x = {x_val}: {y:.6f}")
+        ode_expr = inputs[0]  
+        y0 = float(inputs[1])  
+        iter_count = int(inputs[2])  
+        x_val = float(inputs[3])  
+        x = sp.Symbol('x')
+        y = sp.Function('y')(x)
+        y_approx = y0
+        for i in range(iter_count):
+            y_approx = y0 + sp.integrate(x + y_approx, x)
+        y_value = float(sp.N(y_approx.subs(x, x_val)))
+        self.append_text(f"Picard's approximation at x = {x_val}: {y_value:.6f}")
 
     def handle_simpson(self, inputs):
         if not all(inputs[:4]):
