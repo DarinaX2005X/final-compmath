@@ -247,7 +247,7 @@ class MathApp:
         abs_err = abs(true_val - approx_val)
         rel_err = abs_err / true_val if true_val != 0 else float('inf')
         self.append_text(f"Absolute Error: {abs_err:.6f}")
-        self.append_text(f"Relative Error: {rel_err:.6%}")
+        self.append_text(f"Relative Error: {rel_err:.6f}")
 
     def handle_graphical_method(self, inputs):
         if not all(inputs[:3]):
