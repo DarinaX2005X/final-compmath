@@ -277,30 +277,16 @@ class MathApp:
 
         if f(a) * f(b) >= 0:
             raise ValueError("f(a) and f(b) must have opposite signs.")
-        roots = self.find_all_roots_bisection(f, a, b, tol)
-        for root in roots:
-            self.append_text(f"Approximate root: {root:.6f}")
-
-    def find_all_roots_bisection(self, f, a, b, tol):
-        roots = []
-        intervals = [(a, b)]
-        while intervals:
-            a, b = intervals.pop()
-            if f(a) * f(b) < 0:
-                midpoint = (a + b) / 2
-                while abs(f(midpoint)) > tol:
-                    if f(a) * f(midpoint) < 0:
-                        b = midpoint
-                    else:
-                        a = midpoint
-                    midpoint = (a + b) / 2
-                roots.append(midpoint)
+        
+        midpoint = (a + b) / 2
+        while abs(f(midpoint)) > tol:
+            if f(a) * f(midpoint) < 0:
+                b = midpoint
             else:
-                mid = (a + b) / 2
-                if b - a > tol:
-                    intervals.append((a, mid))
-                    intervals.append((mid, b))
-        return roots
+                a = midpoint
+            midpoint = (a + b) / 2
+
+        self.append_text(f"Approximate root: {midpoint:.6f}")
 
     def handle_newton_raphson(self, inputs):
         if not all(inputs[:3]):
